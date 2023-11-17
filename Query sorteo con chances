@@ -1,0 +1,45 @@
+-- Crear una tabla temporal
+CREATE TABLE #sorteotestss (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    name VARCHAR(255),
+    chance_of_winning INT
+);
+
+-- Insertar datos de muestra en #sorteotest
+INSERT INTO #sorteotestss (name, chance_of_winning) VALUES
+    ('Federico Nicolas Castillo', 229),
+    ('walter sebastian silva', 1),
+    ('diego alejandro alvarez', 98),
+    ('pablo emiliano nieto', 98),
+    ('Marta Vetorazzi', 98);
+
+-- Crear una tabla de resultado duplicando las filas según chance_of_winning
+CREATE TABLE #result (
+    id INT,
+    name VARCHAR(255),
+    chance_of_winning INT
+);
+
+-- Insertar filas duplicadas
+INSERT INTO #result (id, name, chance_of_winning)
+SELECT
+    ROW_NUMBER() OVER (ORDER BY (SELECT NULL)),
+    st.name,
+    st.chance_of_winning
+FROM #sorteotest st
+CROSS APPLY (SELECT TOP (st.chance_of_winning) 1 AS n FROM master.dbo.spt_values) AS X;
+
+-- Ver los resultados
+-- Seleccionar una fila aleatoria de la tabla creada
+SELECT TOP 1
+    id,
+    name,
+    chance_of_winning
+FROM #result
+ORDER BY NEWID();
+
+
+-- Limpiar las tablas temporales
+DROP TABLE #sorteotestss;
+DROP TABLE #result;
+
